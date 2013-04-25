@@ -13,12 +13,13 @@ int main(){
   FILE *datos1.txt;
   FILE *datos2.txt;
   int n_pasos = 1000;
-  int n_tiempo = 1000;
+  
+  float intervalo_tiempo = 3.0/10.0;
   float delta_x = 0.001;
   float delta_t = 0.003;
   float c = 1.0;
   float r = c*delta_t/delta_x;
-  int i = 0;
+  
   int j = 0;
 
   float *u_inicial;
@@ -36,34 +37,38 @@ if(!u_inicial || !u_pasada || !u_ahora || !u_nueva){
     exit(1);
   }
 
- condicionesIniciales(u_inicial, n_pasos, delta_x);
 
- iteracionTemporal(u_inicial, u_pasada, u_ahora, u_nueva, n_pasos, r, n_tiempo);
-
- datos.txt = fopen('datos.txt', 'w');
- 
+//Itera sobre las condiciones iniciales (aunque creo que esta iteracion tendremos que sacarla de este archivo). Luego sobre 10 intervalos de tiempo igualmente espaciados para producir 10 graficas para cada juego de condiciones iniciales. Finalmente itera para producir las tablas de la funcion para los valores entre 0 y 1 de x.
 int ind;
 for (ind = 0; ind < 2; ind ++){
 
+	condicionesIniciales(u_inicial, n_pasos, delta_x, ind);
+
+	int i;
+	for (i = 0; i < 10; i ++){
+ 	
+	int n_tiempo = i*intervalo_tiempo;	
+	iteracionTemporal(u_inicial, u_pasada, u_ahora, u_nueva, n_pasos, r, n_tiempo);
+	
+	int temp = ind*10 + i;    
+	char num[30];
+	sprintf(num, "%d.dat", temp);
+	FILE *export;
+	export = fopen(num, "w");
+	if(!export){
+		printf("problem with file %s\n", num);
+		exit(1);
+	}
     
-    char num[30];
-    sprintf(num, "%d.dat", ind);
-    FILE *export;
-    export = fopen(num, "w");
-    if(!export){
-      printf("problem with file %s\n", num);
-      exit(1);
-    }
-    
-    int inj;
-    for(inj = 0; inj < n_pasos; inj ++){
+   	int j;
+	for(j = 0; j < n_pasos; j ++){
       
-      fprintf(export,"%f %f %f %f \n", t[inj],u[inj]); //cambiamos x por u
-    }
-      fclose(export);
+		fprintf(export,"%f\n" u[j]); //cambiamos x por u
+	}
+	fclose(export);
 
 }
-
+              
 
 }
 

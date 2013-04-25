@@ -55,10 +55,10 @@ for (ind = 0; ind < 2; ind ++){
       exit(1);
     }
     
-    int inj;
-    for(inj = 0; inj < n_pasos; inj ++){
+    int ind;
+    for(ind = 0; ind < n_pasos; ind ++){
       
-      fprintf(export,"%f %f %f %f \n", t[inj],u[inj]); //cambiamos x por u
+      fprintf(export,"%f %f \n", t[ind], u[ind]); //cambiamos x por u
     }
       fclose(export);
 

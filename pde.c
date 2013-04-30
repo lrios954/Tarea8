@@ -1,14 +1,20 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include "condiciones.h"
-
-void iteracion(float *u_inicial, float *u_pasada, float *u_ahora, float *u_nueva, int n_pasos, float r);
-void iteracionTemporal(float *u_inicial, float *u_pasada, float *u_ahora, float *u_nueva, int n_pasos, float r, int n_tiempo);
-
-
+#include "condicionesIniciales.h"
 
 int main(){
+
+
+
+	FILE *u_1i;
+	FILE *u_1a;
+	FILE *u_2i;
+	FILE *u_2a;
+	u_1i = fopen("inicial1.dat", "w");
+	u_1a = fopen("ahora1.dat", "w");
+	u_2i = fopen("inicial2.dat", "w");
+	u_2a = fopen("ahora2.dat", "w");
 
   int n_pasos = 1000;
   
@@ -21,83 +27,73 @@ int main(){
   float *u_pasada;
   float *u_ahora;
   float *u_nueva;
+  double *x;
+  double *t;
+
+int n_t=3E5;
+int n_x=100;
+
+int i;
+int j;
 
   u_inicial = malloc(n_pasos*sizeof(float));  
   u_pasada = malloc(n_pasos*sizeof(float));
   u_ahora = malloc(n_pasos*sizeof(float));
   u_nueva = malloc(n_pasos*sizeof(float));
+  x=malloc(n_pasos*sizeof(double));
+  t=malloc(n_pasos*sizeof(double));
+
 
 if(!u_inicial || !u_pasada || !u_ahora || !u_nueva){
     printf("Problema con memoria");
     exit(1);
   }
-
-
-//Itera sobre las condiciones iniciales (aunque creo que esta iteracion tendremos que sacarla de este archivo). Luego sobre 10 intervalos de tiempo igualmente espaciados para producir 10 graficas para cada juego de condiciones iniciales. Finalmente itera para producir las tablas de la funcion para los valores entre 0 y 1 de x.
 int ind;
-for (ind = 0; ind < 2; ind ++){
+for (ind = 0; j < 2; ind ++)
+	{
 
-	condicionesIniciales(u_inicial, n_pasos,  ind, delta_x);
+void condicionesIniciales(float *u_inicial, int n_x, int ind, float delta_x);
 
-	int i;
-	for (i = 0; i < 10; i ++){
- 	
-		int n_tiempo = i*intervalo_tiempo;	
-		iteracionTemporal(u_inicial, u_pasada, u_ahora, u_nueva, n_pasos, alpha, n_tiempo);
-	
-		int temp = ind*10 + i;    
-		char num[30];
-		sprintf(num, "%d.dat", temp);
-		FILE *export;
-		export = fopen(num, "w");
-		if(!export){
-			printf("problem with file %s\n", num);
-			exit(1);
+	for (j = 0; j < n_t; j ++)
+	{
+		t[i]= j * delta_t;	
+	}
+
+	u_nueva[0] = 0.0;
+	u_nueva[n_x-1] = 0.0;
+
+	for (i = 1; i < n_x-1; i ++)
+	{
+		u_nueva[i] = alpha*u_inicial[i+1] + (1.0 - 2.0 * alpha)*u_inicial[i]+alpha*u_inicial[i-1];
+		u_ahora[i] = u_nueva[i];
+	}
+
+	for (j = 0; j < n_t/10; j ++)
+	{	
+		for (i = 1; i < n_x-1; i ++)	
+		{
+			u_nueva[i] = alpha*u_ahora[i+1] + (1.0 - 2.0 * alpha)*u_ahora[i]+alpha*u_ahora[i-1];
+			u_ahora[i] = u_nueva[i];
 		}
-    
-	   	int j;
-		for(j = 0; j < n_pasos; j ++){
-      
-			fprintf(export,"%f\n", u_ahora[j]); //cambiamos x por u
-		}
-		fclose(export);
+		printf("t = %d \n",j);
+	}
+if(ind==0)
+{
+		for (i = 0; i < n_x; i ++)
+	{
+		fprintf(u_1i,"%e %e \n", x[i],u_inicial[i]);
+		fprintf(u_1a,"%e %e \n", x[i],u_ahora[i]);
+	}
+}
+if(ind==1)
+{
+		for (i = 0; i < n_x; i ++)
+	{
+		fprintf(u_2i,"%e %e \n", x[i],u_inicial[i]);
+		fprintf(u_2a,"%e %e \n", x[i],u_ahora[i]);
+	}
+}
 
 	}
-              
-
-}
-
-}
-
-
-void iteracion(float *u_inicial, float *u_pasada, float *u_ahora, float *u_nueva, int n_pasos, float alpha){
-  
-int i = 0;
-u_inicial[0] = 0.0;
-u_inicial[n_pasos - 1] = 0.0;
-
-//Se construye u_nueva
- for(i = 0; i < n_pasos; i ++){
-   u_nueva[i] = alpha*u_inicial[i+1] + (1-2*alpha)*u_inicial[i] + alpha*u_inicial[i-1];
- }
-
-for(i = 0; i < n_pasos; i ++){
-   u_pasada[i] = u_inicial[i];
- }
-
-for(i = 0; i < n_pasos; i ++){
-  u_ahora[i] = u_nueva[i];
-}
-
-}
-
-void iteracionTemporal(float *u_inicial, float *u_pasada, float *u_ahora, float *u_nueva, int n_pasos, float alpha,  int n_tiempo){
-
-  int j;
-  for(j = 0; j < n_tiempo; j ++){
-
-    iteracion(u_inicial, u_pasada, u_ahora, u_nueva,  n_pasos, alpha);
-
-  }
 
 }
